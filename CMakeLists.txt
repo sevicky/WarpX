@@ -210,15 +210,19 @@ foreach(D IN LISTS WarpX_DIMS)
     warpx_set_suffix_dims(SD ${D})
 
     # ABLASTR library
-    add_library(ablastr_${SD})
+    add_library(ablastr_${SD}
+            )
     set(_BUILDINFO_SRC ablastr_${SD})
     list(APPEND _ALL_TARGETS ablastr_${SD})
-    add_library(WarpX::ablastr_${SD} ALIAS ablastr_${SD})
+    add_library(WarpX::ablastr_${SD} ALIAS ablastr_${SD}
+            )
 
-    # link into a library (default: static)
+    #link into a library (default: static)
     if(WarpX_LIB)
-        add_library(lib_${SD})
-        add_library(WarpX::lib_${SD} ALIAS lib_${SD})
+        add_library(lib_${SD}
+                )
+        add_library(WarpX::lib_${SD} ALIAS lib_${SD}
+                )
         target_link_libraries(lib_${SD} PUBLIC ablastr_${SD})
         set(_BUILDINFO_SRC lib_${SD})
         list(APPEND _ALL_TARGETS lib_${SD})
@@ -233,8 +237,10 @@ foreach(D IN LISTS WarpX_DIMS)
     #   note: we currently avoid a dependency on a core library
     #         for simpler usage, but could make this an option
     if(WarpX_APP)
-        add_executable(app_${SD})
-        add_executable(WarpX::app_${SD} ALIAS app_${SD})
+        add_executable(app_${SD}
+                )
+        add_executable(WarpX::app_${SD} ALIAS app_${SD}
+                )
         target_link_libraries(app_${SD} PRIVATE lib_${SD})
         set(_BUILDINFO_SRC app_${SD})
         list(APPEND _ALL_TARGETS app_${SD})
@@ -262,16 +268,18 @@ foreach(D IN LISTS WarpX_DIMS)
         $<BUILD_INTERFACE:${WarpX_BINARY_DIR}/Source>
     )
     if(WarpX_LIB)
-        target_include_directories(lib_${SD} PUBLIC
-            $<BUILD_INTERFACE:${WarpX_SOURCE_DIR}/Source>
-            $<BUILD_INTERFACE:${WarpX_BINARY_DIR}/Source>
-        )
+        #target_include_directories(lib_${SD} PUBLIC
+           # $<BUILD_INTERFACE:${WarpX_SOURCE_DIR}/Source>
+            #$<BUILD_INTERFACE:${WarpX_BINARY_DIR}/Source>
+       # )
     endif()
 
     # build Python module (this is always a shared library)
     if(WarpX_PYTHON)
-        add_library(pyWarpX_${SD} MODULE Source/Python/pyWarpX.cpp)
-        add_library(WarpX::pyWarpX_${SD} ALIAS pyWarpX_${SD})
+        add_library(pyWarpX_${SD} MODULE Source/Python/pyWarpX.cpp
+                Examples/Physics_applications/uniform_plasma/uniform_analysis.cpp)
+        add_library(WarpX::pyWarpX_${SD} ALIAS pyWarpX_${SD}
+                Examples/Physics_applications/uniform_plasma/uniform_analysis.cpp)
         target_link_libraries(pyWarpX_${SD} PUBLIC lib_${SD})
         set(_BUILDINFO_SRC pyWarpX_${SD})
         list(APPEND _ALL_TARGETS pyWarpX_${SD})

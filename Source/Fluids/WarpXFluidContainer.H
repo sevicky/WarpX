@@ -168,6 +168,7 @@ protected:
     std::unique_ptr<InjectorDensity,InjectorDensityDeleter> h_inj_rho;
     InjectorDensity* d_inj_rho = nullptr;
     std::unique_ptr<amrex::Parser> density_parser;
+    amrex::MultiFab* mf;
 
     std::unique_ptr<InjectorMomentum,InjectorMomentumDeleter> h_inj_mom;
     InjectorMomentum* d_inj_mom = nullptr;

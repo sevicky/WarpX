@@ -8,6 +8,9 @@
 #include <ablastr/warn_manager/WarnManager.H>
 #include "Utils/TextMsg.H"
 #include "Utils/Parser/ParserUtils.H"
+#include <AMReX_MultiFab.H>
+#include <AMReX.H>
+
 
 namespace SpeciesUtils {
 
@@ -104,7 +107,13 @@ namespace SpeciesUtils {
                 utils::parser::makeParser(str_density_function,{"x","y","z"}));
             h_inj_rho.reset(new InjectorDensity((InjectorDensityParser*)nullptr,
                 density_parser->compile<3>()));
-        } else {
+        } else if (rho_prof_s == "fromfile") {
+            // Construct InjectorDensity with InjectorDensityFromFile.
+            std::string external_file_path = "./";
+            utils::parser::Store_parserString(pp_species, source_name, "read_density_from_path", external_file_path);
+            h_inj_rho.reset(new InjectorDensity((InjectorDensityFromFile*)nullptr, species_name));
+        }
+        else {
             StringParseAbortMessage("Density profile type", rho_prof_s);
         }
     }
