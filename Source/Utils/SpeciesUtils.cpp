@@ -84,7 +84,7 @@ namespace SpeciesUtils {
         std::unique_ptr<InjectorDensity,InjectorDensityDeleter>& h_inj_rho,
         std::unique_ptr<amrex::Parser>& density_parser)
     {
-        amrex::ParmParse pp_species(species_name);
+        const amrex::ParmParse pp_species(species_name);
 
         // parse density information
         std::string rho_prof_s;
@@ -135,7 +135,7 @@ namespace SpeciesUtils {
     {
         using namespace amrex::literals;
 
-        amrex::ParmParse pp_species(species_name);
+        const amrex::ParmParse pp_species(species_name);
 
         // parse momentum information
         std::string mom_dist_s;
