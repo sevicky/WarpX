@@ -8,9 +8,6 @@
 #include <ablastr/warn_manager/WarnManager.H>
 #include "Utils/TextMsg.H"
 #include "Utils/Parser/ParserUtils.H"
-#include <AMReX_MultiFab.H>
-#include <AMReX.H>
-
 
 namespace SpeciesUtils {
 
