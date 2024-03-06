@@ -22,7 +22,6 @@
 #include <AMReX_REAL.H>
 #include <AMReX_Vector.H>
 #include <AMReX_ParmParse.H>
-#include <AMReX_MultiFab.H>
 
 #include <AMReX_BaseFwd.H>
 
@@ -171,7 +170,6 @@ protected:
     std::unique_ptr<InjectorDensity,InjectorDensityDeleter> h_inj_rho;
     InjectorDensity* d_inj_rho = nullptr;
     std::unique_ptr<amrex::Parser> density_parser;
-    amrex::MultiFab* mf;
 
     std::unique_ptr<InjectorFlux,InjectorFluxDeleter> h_inj_flux;
     InjectorFlux* d_inj_flux = nullptr;
