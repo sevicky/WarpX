@@ -1,7 +1,7 @@
 # Preamble ####################################################################
 #
 cmake_minimum_required(VERSION 3.20.0)
-project(WarpX VERSION 24.02)
+project(WarpX VERSION 24.01)
 
 include(${WarpX_SOURCE_DIR}/cmake/WarpXFunctions.cmake)
 
@@ -43,15 +43,7 @@ set_cxx17_superbuild()
 # this is an optional tool that stores compiled object files; allows fast
 # re-builds even with "make clean" in between. Mainly used to store AMReX
 # objects
-if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-    set(WarpX_CCACHE_DEFAULT ON)
-else()
-    set(WarpX_CCACHE_DEFAULT OFF)  # we are a subproject in a superbuild
-endif()
-option(WarpX_CCACHE "Enable ccache for faster rebuilds" ${WarpX_CCACHE_DEFAULT})
-if(WarpX_CCACHE)
-    set_ccache()
-endif()
+set_ccache()
 
 
 # Output Directories ##########################################################
@@ -156,7 +148,6 @@ endif()
 
 # this defined the variable BUILD_TESTING which is ON by default
 #include(CTest)
-
 
 # Dependencies ################################################################
 #

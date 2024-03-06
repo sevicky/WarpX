@@ -1,26 +1,22 @@
 #!/bin/bash
-#SBATCH --account=<account_to_charge>
 #SBATCH --job-name=warpx
+#SBATCH --account=<account_to_charge>
 #SBATCH --constraint=MI250
-#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=8 --cpus-per-task=8 --gpus-per-node=8
+#SBATCH --threads-per-core=1 # --hint=nomultithread
 #SBATCH --exclusive
 #SBATCH --output=%x-%j.out
 #SBATCH --time=00:10:00
+#SBATCH --nodes=2
 
 module purge
 
-# A CrayPE environment version
-module load cpe/23.12
-# An architecture
+# Architecture
 module load craype-accel-amd-gfx90a craype-x86-trento
 # A compiler to target the architecture
 module load PrgEnv-cray
 # Some architecture related libraries and tools
-module load CCE-GPU-3.0.0
-module load amd-mixed/5.2.3
-
-date
-module list
+module load amd-mixed
 
 export MPICH_GPU_SUPPORT_ENABLED=1
 
@@ -40,5 +36,4 @@ export OMP_NUM_THREADS=1
 export WARPX_NMPI_PER_NODE=8
 export TOTAL_NMPI=$(( ${SLURM_JOB_NUM_NODES} * ${WARPX_NMPI_PER_NODE} ))
 srun -N${SLURM_JOB_NUM_NODES} -n${TOTAL_NMPI} --ntasks-per-node=${WARPX_NMPI_PER_NODE} \
-     --cpus-per-task=8 --threads-per-core=1 --gpu-bind=closest \
     ./warpx inputs > output.txt

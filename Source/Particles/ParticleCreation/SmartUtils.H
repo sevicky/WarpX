@@ -17,7 +17,6 @@
 #include <AMReX_GpuQualifiers.H>
 #include <AMReX_INT.H>
 #include <AMReX_ParallelDescriptor.H>
-#include <AMReX_Particle.H>
 
 #include <map>
 #include <string>
@@ -49,7 +48,7 @@ SmartCopyTag getSmartCopyTag (const NameMap& src, const NameMap& dst) noexcept;
  * \param num_added the number of particles to set the ids for.
  */
 template <typename PTile>
-void setNewParticleIDs (PTile& ptile, amrex::Long old_size, amrex::Long num_added)
+void setNewParticleIDs (PTile& ptile, int old_size, int num_added)
 {
     amrex::Long pid;
 #ifdef AMREX_USE_OMP
@@ -61,12 +60,12 @@ void setNewParticleIDs (PTile& ptile, amrex::Long old_size, amrex::Long num_adde
     }
 
     const int cpuid = amrex::ParallelDescriptor::MyProc();
-    auto ptd = ptile.getParticleTileData();
+    auto pp = ptile.GetArrayOfStructs()().data() + old_size;
     amrex::ParallelFor(num_added, [=] AMREX_GPU_DEVICE (int ip) noexcept
     {
-        auto const lip = static_cast<amrex::Long>(ip);
-        auto const new_id = lip + old_size;
-        ptd.m_idcpu[new_id] = amrex::SetParticleIDandCPU(pid+lip, cpuid);
+        auto& p = pp[ip];
+        p.id() = pid+ip;
+        p.cpu() = cpuid;
     });
 }
 

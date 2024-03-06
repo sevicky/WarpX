@@ -190,7 +190,6 @@ Particles
    @callfromafterstep
    def my_after_step_callback():
        warpx = sim.extension.warpx
-       Config = sim.extension.Config
 
        # data access
        multi_pc = warpx.multi_particle_container()
@@ -201,27 +200,27 @@ Particles
        for lvl in range(pc.finest_level + 1):
            # get every local chunk of particles
            for pti in pc.iterator(pc, level=lvl):
-               # compile-time and runtime attributes in SoA format
-               soa = pti.soa().to_cupy() if Config.have_gpu else \
-                     pti.soa().to_numpy()
+               # default layout: AoS with positions and cpuid
+               aos = pti.aos().to_numpy()
+
+               # additional compile-time and runtime attributes in SoA format
+               soa = pti.soa().to_numpy()
 
                # notes:
                # Only the next lines are the "HOT LOOP" of the computation.
-               # For speed, use array operation.
+               # For efficiency, use numpy array operation for speed on CPUs.
+               # For GPUs use .to_cupy() above and compute with cupy or numba.
 
                # write to all particles in the chunk
-               # note: careful, if you change particle positions, you might need to
+               # note: careful, if you change particle positions, you need to
                #       redistribute particles before continuing the simulation step
-               soa.real[0][()] = 0.30  # x
-               soa.real[1][()] = 0.35  # y
-               soa.real[2][()] = 0.40  # z
+               # aos[()]["x"] = 0.30
+               # aos[()]["y"] = 0.35
+               # aos[()]["z"] = 0.40
 
-               # all other attributes: weight, momentum x, y, z, ...
-               for soa_real in soa.real[3:]:
+               for soa_real in soa.real:
                    soa_real[()] = 42.0
 
-               # by default empty unless ionization or QED physics is used
-               # or other runtime attributes were added manually
                for soa_int in soa.int:
                    soa_int[()] = 12
 
@@ -253,8 +252,7 @@ Particles can be added to the simulation at specific positions and with specific
 .. autoclass:: pywarpx.particle_containers.ParticleContainerWrapper
    :members:
 
-The ``get_particle_real_arrays()``, ``get_particle_int_arrays()`` and
-``get_particle_idcpu_arrays()`` functions are called
+The ``get_particle_structs()`` and ``get_particle_arrays()`` functions are called
 by several utility functions of the form ``get_particle_{comp_name}`` where
 ``comp_name`` is one of ``x``, ``y``, ``z``, ``r``, ``theta``, ``id``, ``cpu``,
 ``weight``, ``ux``, ``uy`` or ``uz``.

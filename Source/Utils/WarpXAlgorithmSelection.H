@@ -87,8 +87,7 @@ struct CurrentDepositionAlgo {
     enum {
         Esirkepov = 0,
         Direct = 1,
-        Vay = 2,
-        Villasenor = 3
+        Vay = 2
     };
 };
 

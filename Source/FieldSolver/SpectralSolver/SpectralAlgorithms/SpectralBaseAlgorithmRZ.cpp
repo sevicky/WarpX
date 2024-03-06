@@ -38,7 +38,7 @@ SpectralBaseAlgorithmRZ::ComputeSpectralDivE (
         Box const & bx = field_data.fields[mfi].box();
 
         // Extract arrays for the fields to be updated
-        const Array4<Complex> fields = field_data.fields[mfi].array();
+        Array4<Complex> fields = field_data.fields[mfi].array();
 
         // Extract pointers for the k vectors
         Real const * kr_arr = field_data.getKrArray(mfi).dataPtr();
