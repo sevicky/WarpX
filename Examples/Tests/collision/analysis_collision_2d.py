@@ -55,15 +55,22 @@ a =  0.04330638981264072
 b = -0.11588277796546632
 
 last_fn = sys.argv[1]
+#print('last_fn = ', last_fn)
 # Remove trailing '/' from file name, if necessary
 last_fn.rstrip('/')
 # Find last iteration in file name, such as 'test_name_plt000001' (last_it = '000001')
 last_it = re.search('\d+', last_fn).group()
+#print('last_it = ', last_it)
 # Find output prefix in file name, such as 'test_name_plt000001' (prefix = 'test_name_plt')
-prefix = last_fn[:-len(last_it)]
+prefix = last_fn[:-(len(last_it)-1)]
+
+#print('prefix = ', prefix)
+
+it = last_it[1:]
+#print('it = ', it)
 # Collect all output files in fn_list (names match pattern prefix + arbitrary number)
 fn_list = glob.glob(prefix + '*[0-9]')
-
+#print(fn_list)
 error = 0.0
 nt = 0
 for fn in fn_list:
@@ -78,9 +85,12 @@ for fn in fn_list:
     vxi = numpy.mean(px[ne:np])/mi/c
     vxd = vxe - vxi
     fit = a*math.exp(b*j)
-    error = error + abs(fit-vxd)
+    error = error + abs(fit - vxd)
+    #print(error)
     nt = nt + 1
 
+#print('error1 = ', error)
+#print('nt = ', nt)
 error = error / nt
 
 print('error = ', error)
@@ -98,20 +108,23 @@ if "Python" in last_fn:
 dim = "2d"
 species_name = "electron"
 
-parser_filter_fn = "diags/diag_parser_filter" + last_it
+parser_filter_fn = "diags/diag_parser_filter" + it
 parser_filter_expression = "(x>200) * (z<200) * (px-3*pz>0)"
 post_processing_utils.check_particle_filter(last_fn, parser_filter_fn, parser_filter_expression,
                                             dim, species_name)
 
-uniform_filter_fn = "diags/diag_uniform_filter" + last_it
+uniform_filter_fn = "diags/diag_uniform_filter" + it
 uniform_filter_expression = "ids%6 == 0"
 post_processing_utils.check_particle_filter(last_fn, uniform_filter_fn, uniform_filter_expression,
                                             dim, species_name)
 
-random_filter_fn = "diags/diag_random_filter" + last_it
+random_filter_fn = "diags/diag_random_filter" + it
 random_fraction = 0.77
 post_processing_utils.check_random_filter(last_fn, random_filter_fn, random_fraction,
                                           dim, species_name)
 
 test_name = os.path.split(os.getcwd())[1]
+#print('test_name =', test_name)
+test_name = test_name + "XZ"
+#print(test_name)
 checksumAPI.evaluate_checksum(test_name, fn, do_particles=False)

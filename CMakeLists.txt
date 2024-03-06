@@ -70,8 +70,8 @@ option(WarpX_APP           "Build the WarpX executable application"     ON)
 option(WarpX_ASCENT        "Ascent in situ diagnostics"                 OFF)
 option(WarpX_EB            "Embedded boundary support"                  OFF)
 cmake_dependent_option(WarpX_GPUCLOCK
-        "Add GPU kernel timers (cost function)"      ON
-        "WarpX_COMPUTE STREQUAL CUDA OR WarpX_COMPUTE STREQUAL HIP" OFF)
+                           "Add GPU kernel timers (cost function)"      ON
+                           "WarpX_COMPUTE STREQUAL CUDA OR WarpX_COMPUTE STREQUAL HIP" OFF)
 option(WarpX_LIB           "Build WarpX as a library"                   OFF)
 option(WarpX_MPI           "Multi-node support (message-passing)"       ON)
 option(WarpX_OPENPMD       "openPMD I/O (HDF5, ADIOS)"                  ON)
@@ -86,8 +86,8 @@ set(WarpX_DIMS 3 CACHE STRING "Simulation dimensionality <1;2;3;RZ>")
 list(REMOVE_DUPLICATES WarpX_DIMS)
 foreach(D IN LISTS WarpX_DIMS)
     if(NOT D IN_LIST WarpX_DIMS_VALUES)
-        message(FATAL_ERROR "WarpX_DIMS=${D} is not allowed."
-                " Must be one of ${WarpX_DIMS_VALUES}")
+       message(FATAL_ERROR "WarpX_DIMS=${D} is not allowed."
+          " Must be one of ${WarpX_DIMS_VALUES}")
     endif()
 endforeach()
 
@@ -130,12 +130,12 @@ set_default_build_type("Release")
 # (also know as "link-time optimization" or "whole program optimization")
 option(WarpX_IPO                                "Compile WarpX with interprocedural optimization (will take more time)" OFF)
 option(WarpX_PYTHON_IPO
-        "Compile Python bindings with interprocedural optimization (IPO) / link-time optimization (LTO)"
-        ON
+    "Compile Python bindings with interprocedural optimization (IPO) / link-time optimization (LTO)"
+    ON
 )
 
 set(pyWarpX_VERSION_INFO "" CACHE STRING
-        "PEP-440 conformant version (set by setup.py)")
+    "PEP-440 conformant version (set by setup.py)")
 
 # enforce consistency of dependent options
 if(WarpX_APP OR WarpX_PYTHON)
@@ -146,7 +146,7 @@ endif()
 # shared WarpX library or a third party, like ImpactX, uses ablastr in a
 # shared library (e.g., for Python bindings), then we need relocatable code.
 option(ABLASTR_POSITION_INDEPENDENT_CODE
-        "Build ABLASTR with position independent code" ON)
+       "Build ABLASTR with position independent code" ON)
 mark_as_advanced(ABLASTR_POSITION_INDEPENDENT_CODE)
 
 option(ABLASTR_FFT "compile AnyFFT wrappers" ${WarpX_PSATD})
@@ -219,22 +219,26 @@ foreach(D IN LISTS WarpX_DIMS)
     warpx_set_suffix_dims(SD ${D})
 
     # ABLASTR library
-    add_library(ablastr_${SD})
+    add_library(ablastr_${SD}
+            )
     set(_BUILDINFO_SRC ablastr_${SD})
     list(APPEND _ALL_TARGETS ablastr_${SD})
-    add_library(WarpX::ablastr_${SD} ALIAS ablastr_${SD})
+    add_library(WarpX::ablastr_${SD} ALIAS ablastr_${SD}
+            )
 
-    # link into a library (default: static)
+    #link into a library (default: static)
     if(WarpX_LIB)
-        add_library(lib_${SD})
-        add_library(WarpX::lib_${SD} ALIAS lib_${SD})
+        add_library(lib_${SD}
+                )
+        add_library(WarpX::lib_${SD} ALIAS lib_${SD}
+                )
         target_link_libraries(lib_${SD} PUBLIC ablastr_${SD})
         set(_BUILDINFO_SRC lib_${SD})
         list(APPEND _ALL_TARGETS lib_${SD})
 
         set_target_properties(lib_${SD} PROPERTIES
-                POSITION_INDEPENDENT_CODE ON
-                WINDOWS_EXPORT_ALL_SYMBOLS ON
+            POSITION_INDEPENDENT_CODE ON
+            WINDOWS_EXPORT_ALL_SYMBOLS ON
         )
     endif()
 
@@ -242,8 +246,10 @@ foreach(D IN LISTS WarpX_DIMS)
     #   note: we currently avoid a dependency on a core library
     #         for simpler usage, but could make this an option
     if(WarpX_APP)
-        add_executable(app_${SD})
-        add_executable(WarpX::app_${SD} ALIAS app_${SD})
+        add_executable(app_${SD}
+                )
+        add_executable(WarpX::app_${SD} ALIAS app_${SD}
+                )
         target_link_libraries(app_${SD} PRIVATE lib_${SD})
         set(_BUILDINFO_SRC app_${SD})
         list(APPEND _ALL_TARGETS app_${SD})
@@ -251,75 +257,77 @@ foreach(D IN LISTS WarpX_DIMS)
 
     if(WarpX_PYTHON OR (WarpX_LIB AND BUILD_SHARED_LIBS))
         set(ABLASTR_POSITION_INDEPENDENT_CODE ON CACHE BOOL
-                "Build ABLASTR with position independent code" FORCE)
+            "Build ABLASTR with position independent code" FORCE)
     endif()
 
     # ABLASTR library (static or shared)
     set_target_properties(ablastr_${SD} PROPERTIES
-            WINDOWS_EXPORT_ALL_SYMBOLS ON
+        WINDOWS_EXPORT_ALL_SYMBOLS ON
     )
     if(ABLASTR_POSITION_INDEPENDENT_CODE)
         set_target_properties(ablastr_${SD} PROPERTIES
-                POSITION_INDEPENDENT_CODE ON
+            POSITION_INDEPENDENT_CODE ON
         )
     endif()
 
     # own headers
     target_include_directories(ablastr_${SD} PUBLIC
-            # future: own directory root
-            $<BUILD_INTERFACE:${WarpX_SOURCE_DIR}/Source>
-            $<BUILD_INTERFACE:${WarpX_BINARY_DIR}/Source>
+        # future: own directory root
+        $<BUILD_INTERFACE:${WarpX_SOURCE_DIR}/Source>
+        $<BUILD_INTERFACE:${WarpX_BINARY_DIR}/Source>
     )
     if(WarpX_LIB)
-        target_include_directories(lib_${SD} PUBLIC
-                $<BUILD_INTERFACE:${WarpX_SOURCE_DIR}/Source>
-                $<BUILD_INTERFACE:${WarpX_BINARY_DIR}/Source>
-        )
+        #target_include_directories(lib_${SD} PUBLIC
+           # $<BUILD_INTERFACE:${WarpX_SOURCE_DIR}/Source>
+            #$<BUILD_INTERFACE:${WarpX_BINARY_DIR}/Source>
+       # )
     endif()
 
     # build Python module (this is always a shared library)
     if(WarpX_PYTHON)
-        add_library(pyWarpX_${SD} MODULE Source/Python/pyWarpX.cpp)
-        add_library(WarpX::pyWarpX_${SD} ALIAS pyWarpX_${SD})
+        add_library(pyWarpX_${SD} MODULE Source/Python/pyWarpX.cpp
+                Examples/Physics_applications/uniform_plasma/uniform_analysis.cpp)
+        add_library(WarpX::pyWarpX_${SD} ALIAS pyWarpX_${SD}
+                Examples/Physics_applications/uniform_plasma/uniform_analysis.cpp)
         target_link_libraries(pyWarpX_${SD} PUBLIC lib_${SD})
         set(_BUILDINFO_SRC pyWarpX_${SD})
         list(APPEND _ALL_TARGETS pyWarpX_${SD})
 
         # set Python module properties
         set_target_properties(pyWarpX_${SD} PROPERTIES
-                # hide symbols for combining multiple pybind11 modules downstream & for
-                # reduced binary size
-                CXX_VISIBILITY_PRESET "hidden"
-                CUDA_VISIBILITY_PRESET "hidden"
-                # name of the pybind-generated python module, which is wrapped in another
-                # fluffy front-end modules, so we can extend it with pure Python
-                ARCHIVE_OUTPUT_NAME warpx_pybind_${SD}
-                LIBRARY_OUTPUT_NAME warpx_pybind_${SD}
-                # build output directories - mainly set to run tests from CMake & IDEs
-                ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
-                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
-                RUNTIME_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
-                PDB_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
-                COMPILE_PDB_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
+            # hide symbols for combining multiple pybind11 modules downstream & for
+            # reduced binary size
+            CXX_VISIBILITY_PRESET "hidden"
+            CUDA_VISIBILITY_PRESET "hidden"
+            # name of the pybind-generated python module, which is wrapped in another
+            # fluffy front-end modules, so we can extend it with pure Python
+            ARCHIVE_OUTPUT_NAME warpx_pybind_${SD}
+            LIBRARY_OUTPUT_NAME warpx_pybind_${SD}
+            # build output directories - mainly set to run tests from CMake & IDEs
+            ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
+            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
+            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
+            PDB_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
+            COMPILE_PDB_OUTPUT_DIRECTORY ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
         )
         get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
         if(isMultiConfig)
             foreach(CFG IN LISTS CMAKE_CONFIGURATION_TYPES)
                 string(TOUPPER "${CFG}" CFG_UPPER)
                 set_target_properties(pyWarpX_${SD} PROPERTIES
-                        # build output directories - mainly set to run tests from CMake & IDEs
-                        # note: same as above, but for Multi-Config generators
-                        ARCHIVE_OUTPUT_DIRECTORY_${CFG_UPPER} ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
-                        LIBRARY_OUTPUT_DIRECTORY_${CFG_UPPER} ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
-                        RUNTIME_OUTPUT_DIRECTORY_${CFG_UPPER} ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
-                        PDB_OUTPUT_DIRECTORY_${CFG_UPPER} ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
-                        COMPILE_PDB_OUTPUT_DIRECTORY_${CFG_UPPER} ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
+                    # build output directories - mainly set to run tests from CMake & IDEs
+                    # note: same as above, but for Multi-Config generators
+                    ARCHIVE_OUTPUT_DIRECTORY_${CFG_UPPER} ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
+                    LIBRARY_OUTPUT_DIRECTORY_${CFG_UPPER} ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
+                    RUNTIME_OUTPUT_DIRECTORY_${CFG_UPPER} ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
+                    PDB_OUTPUT_DIRECTORY_${CFG_UPPER} ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
+                    COMPILE_PDB_OUTPUT_DIRECTORY_${CFG_UPPER} ${CMAKE_PYTHON_OUTPUT_DIRECTORY}/pywarpx
                 )
             endforeach()
         endif()
         if(EMSCRIPTEN)
             set_target_properties(pyWarpX_${SD} PROPERTIES
-                    PREFIX "")
+                PREFIX "")
         else()
             pybind11_extension(pyWarpX_${SD})
         endif()
@@ -349,12 +357,12 @@ endforeach()
 #   - extern ... functions
 #   - static class member variables
 generate_export_header(ablastr_${WarpX_DIMS_LAST}
-        BASE_NAME ablastr
-        EXPORT_FILE_NAME Source/ablastr/export.H)
+    BASE_NAME ablastr
+    EXPORT_FILE_NAME Source/ablastr/export.H)
 if(WarpX_LIB)
     generate_export_header(lib_${WarpX_DIMS_LAST}
-            BASE_NAME warpx
-            EXPORT_FILE_NAME Source/Utils/export.H)
+        BASE_NAME warpx
+        EXPORT_FILE_NAME Source/Utils/export.H)
 endif()
 # At build-time, we might need to set WarpX_<last>_EXPORTS and ablastr_<last>_EXPORTS on all targets
 foreach(D IN LISTS WarpX_DIMS)
@@ -378,9 +386,9 @@ endforeach()
 if(WarpX_PYTHON)
     # copy PICMI and other Python scripts to build directory
     add_custom_command(TARGET pyWarpX_${WarpX_DIMS_LAST} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${WarpX_SOURCE_DIR}/Python/pywarpx
-            $<TARGET_FILE_DIR:pyWarpX_${WarpX_DIMS_LAST}>
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${WarpX_SOURCE_DIR}/Python/pywarpx
+        $<TARGET_FILE_DIR:pyWarpX_${WarpX_DIMS_LAST}>
     )
 endif()
 
@@ -461,16 +469,16 @@ if(WarpX_COMPUTE STREQUAL CUDA)
         target_compile_features(${warpx_tgt} PUBLIC cuda_std_17)
     endforeach()
     set_target_properties(${_ALL_TARGETS} PROPERTIES
-            CUDA_EXTENSIONS OFF
-            CUDA_STANDARD_REQUIRED ON
+        CUDA_EXTENSIONS OFF
+        CUDA_STANDARD_REQUIRED ON
     )
 else()
     foreach(warpx_tgt IN LISTS _ALL_TARGETS)
         target_compile_features(${warpx_tgt} PUBLIC cxx_std_17)
     endforeach()
     set_target_properties(${_ALL_TARGETS} PROPERTIES
-            CXX_EXTENSIONS OFF
-            CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+        CXX_STANDARD_REQUIRED ON
     )
 endif()
 
@@ -522,7 +530,7 @@ foreach(D IN LISTS WarpX_DIMS)
     if(WarpX_PYTHON AND pyWarpX_VERSION_INFO)
         # for module __version__
         target_compile_definitions(pyWarpX_${SD} PRIVATE
-                PYWARPX_VERSION_INFO=${pyWarpX_VERSION_INFO})
+            PYWARPX_VERSION_INFO=${pyWarpX_VERSION_INFO})
     endif()
 
     # <cmath>: M_PI
@@ -558,9 +566,9 @@ set_cxx_warnings()
 get_source_version(WarpX_${WarpX_DIMS_LAST} ${WarpX_SOURCE_DIR})
 set(WarpX_GIT_VERSION ${WarpX_${WarpX_DIMS_LAST}_GIT_VERSION})
 configure_file(
-        ${WarpX_SOURCE_DIR}/Source/Utils/WarpXVersion.H.in
-        ${WarpX_BINARY_DIR}/Source/Utils/WarpXVersion.H
-        @ONLY
+    ${WarpX_SOURCE_DIR}/Source/Utils/WarpXVersion.H.in
+    ${WarpX_BINARY_DIR}/Source/Utils/WarpXVersion.H
+    @ONLY
 )
 
 # these files are used if WarpX is installed and picked up by a downstream
@@ -591,11 +599,11 @@ foreach(D IN LISTS WarpX_DIMS)
     endif()
 
     install(TARGETS ${WarpX_INSTALL_TARGET_NAMES}
-            EXPORT WarpXTargets
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        EXPORT WarpXTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
 
     # simplified library alias
@@ -640,7 +648,7 @@ endforeach()
 #
 if(WarpX_PYTHON)
     set(PYINSTALLOPTIONS "" CACHE STRING
-            "Additional parameters to pass to `pip install`")
+        "Additional parameters to pass to `pip install`")
 
     # ensure all targets are built before we package them in a wheel
     set(pyWarpX_INSTALL_TARGET_NAMES)
@@ -660,13 +668,13 @@ if(WarpX_PYTHON)
 
     # build the wheel by re-using the python module that we build
     add_custom_target(${WarpX_CUSTOM_TARGET_PREFIX}pip_wheel
-            ${CMAKE_COMMAND} -E rm -f -r warpx-whl
-            COMMAND
+        ${CMAKE_COMMAND} -E rm -f -r warpx-whl
+        COMMAND
             ${CMAKE_COMMAND} -E env PYWARPX_LIB_DIR=$<TARGET_FILE_DIR:pyWarpX_${WarpX_DIMS_LAST}>
-            ${Python_EXECUTABLE} -m pip wheel -v --no-build-isolation --no-deps --wheel-dir=warpx-whl ${WarpX_SOURCE_DIR}
-            WORKING_DIRECTORY
+                ${Python_EXECUTABLE} -m pip wheel -v --no-build-isolation --no-deps --wheel-dir=warpx-whl ${WarpX_SOURCE_DIR}
+        WORKING_DIRECTORY
             ${WarpX_BINARY_DIR}
-            DEPENDS
+        DEPENDS
             ${pyWarpX_INSTALL_TARGET_NAMES}
     )
 
@@ -677,8 +685,8 @@ if(WarpX_PYTHON)
         set(pyWarpX_REQUIREMENT_FILE "requirements.txt")
     endif()
     add_custom_target(${WarpX_CUSTOM_TARGET_PREFIX}pip_install_requirements
-            ${Python_EXECUTABLE} -m pip install ${PYINSTALLOPTIONS} -r "${WarpX_SOURCE_DIR}/${pyWarpX_REQUIREMENT_FILE}"
-            WORKING_DIRECTORY
+        ${Python_EXECUTABLE} -m pip install ${PYINSTALLOPTIONS} -r "${WarpX_SOURCE_DIR}/${pyWarpX_REQUIREMENT_FILE}"
+        WORKING_DIRECTORY
             ${WarpX_BINARY_DIR}
     )
 
@@ -693,11 +701,11 @@ if(WarpX_PYTHON)
     # the package does not change, but the code did change. We need --no-deps,
     # because otherwise pip would also force reinstall all dependencies.
     add_custom_target(${WarpX_CUSTOM_TARGET_PREFIX}pip_install
-            ${CMAKE_COMMAND} -E env WARPX_MPI=${WarpX_MPI}
+        ${CMAKE_COMMAND} -E env WARPX_MPI=${WarpX_MPI}
             ${Python_EXECUTABLE} -m pip install --force-reinstall --no-index --no-deps ${PYINSTALLOPTIONS} --find-links=warpx-whl pywarpx
-            WORKING_DIRECTORY
+        WORKING_DIRECTORY
             ${WarpX_BINARY_DIR}
-            DEPENDS
+        DEPENDS
             pyWarpX_${WarpX_DIMS_LAST}
             ${WarpX_CUSTOM_TARGET_PREFIX}pip_wheel
             ${WarpX_CUSTOM_TARGET_PREFIX}pip_install_requirements
@@ -706,11 +714,11 @@ if(WarpX_PYTHON)
 
     # this is for package managers only
     add_custom_target(${WarpX_CUSTOM_TARGET_PREFIX}pip_install_nodeps
-            ${CMAKE_COMMAND} -E env WARPX_MPI=${WarpX_MPI}
+        ${CMAKE_COMMAND} -E env WARPX_MPI=${WarpX_MPI}
             ${Python_EXECUTABLE} -m pip install --force-reinstall --no-index --no-deps ${PYINSTALLOPTIONS} --find-links=warpx-whl pywarpx
-            WORKING_DIRECTORY
+        WORKING_DIRECTORY
             ${WarpX_BINARY_DIR}
-            DEPENDS
+        DEPENDS
             pyWarpX_${WarpX_DIMS_LAST}
             ${WarpX_CUSTOM_TARGET_PREFIX}pip_wheel
     )

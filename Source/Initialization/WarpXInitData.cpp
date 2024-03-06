@@ -230,7 +230,7 @@ WarpX::PrintMainPICparameters ()
         amrex::Print() << "Current Deposition:   | Esirkepov \n";
     }
     else if (current_deposition_algo == CurrentDepositionAlgo::Villasenor){
-        amrex::Print() << "Current Deposition:   | Villasenor \n";
+      amrex::Print() << "Current Deposition:   | Villasenor \n";
     }
     // Print type of particle pusher
     if (particle_pusher_algo == ParticlePusherAlgo::Vay){
@@ -1334,6 +1334,7 @@ WarpX::LoadExternalFieldsFromFile (int const lev)
     }
 }
 
+//UNCOMMENT THIS LATER
 #if defined(WARPX_USE_OPENPMD) && !defined(WARPX_DIM_1D_Z) && !defined(WARPX_DIM_XZ)
 void
 WarpX::ReadExternalFieldFromFile (
@@ -1512,9 +1513,9 @@ WarpX::ReadExternalFieldFromFile (
     } // End loop over boxes.
 
 } // End function WarpX::ReadExternalFieldFromFile
-#else // WARPX_USE_OPENPMD && !WARPX_DIM_1D_Z && !defined(WARPX_DIM_XZ)
+#else //WARPX_USE_OPENPMD && !WARPX_DIM_1D_Z && !defined(WARPX_DIM_XZ)
 void
-WarpX::ReadExternalFieldFromFile (std::string , amrex::MultiFab* ,std::string, std::string)
+WarpX::ReadExternalFieldFromFile (std::string , amrex::MultiFab* , std::string, std::string)
 {
 #if defined(WARPX_DIM_1D_Z)
     WARPX_ABORT_WITH_MESSAGE("Reading fields from openPMD files is not supported in 1D");
